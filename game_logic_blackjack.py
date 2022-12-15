@@ -1,10 +1,6 @@
 import itertools
 import random
 
-SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
-RANKS = ["2", "3", "4", "5", "6", "7", "8",
-         "9", "10", "Jack", "Queen", "King", "Ace"]
-
 
 class Hand:
 
@@ -55,10 +51,19 @@ class Hand:
 
 class Player:
 
-    hand:
+    hand: Hand
+    fiches: int
 
     def __init__(self, deck):
-        hand = Hand(deck)
+        self.hand = Hand(deck)
+        self.fiches = 100
+
+    def __str__(self):
+        return f'Hand: {str(self.hand)}\nFiches: {self.fiches}'
+
+    def __int__(self):
+        return self.fiches
+
 
 
 ''' controlla chi ha vinto tra il giocatore e il banco
@@ -108,14 +113,19 @@ def player_draws(deck, hand, splitted):
 
 
 # crea un mazzo e lo riempe con 104 carte
-def create_deck() -> list[tuple[str]]:
-    deck = list(itertools.product(SUITS, RANKS))
-    deck += deck
-    random.shuffle(deck)
-    return deck
-
 
 def main() -> None:
+
+    SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
+    RANKS = ["2", "3", "4", "5", "6", "7", "8",
+             "9", "10", "Jack", "Queen", "King", "Ace"]
+
+    def create_deck() -> list[tuple[str]]:
+        deck = list(itertools.product(SUITS, RANKS))
+        deck += deck
+        random.shuffle(deck)
+        return deck
+
     splitted = False
     deck = create_deck()
     player_hand = Hand(deck)
