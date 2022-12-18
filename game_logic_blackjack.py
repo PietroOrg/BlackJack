@@ -42,13 +42,6 @@ class Hand:
         second_hand.append(deck.pop())
         return splitted, second_hand
 
-    def check_hand_sum(self) -> str:
-        total = int(self)
-        if total == 21:
-            return "Blackjack"
-        elif total > 21:
-            return "Bust"
-
 
 class Player:
 
@@ -102,8 +95,3 @@ def create_deck() -> list[tuple[str]]:
     deck += deck
     random.shuffle(deck)
     return deck
-
-
-deck = create_deck()
-player = Player(deck)
-dealer_hand = Hand(deck)
