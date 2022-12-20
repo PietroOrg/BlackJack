@@ -1,4 +1,0 @@
-1) il dealer distribuisce due carte al giocatore
-2) il dealer pesca due carte
-3) il dealer chiede al giocatore se vuole pescare un'altra carta
-4) il dealer pesca carte finchè non arriva a 17
