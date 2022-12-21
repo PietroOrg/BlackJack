@@ -1,6 +1,6 @@
 import customtkinter
 from PIL import Image
-import game_logic_blackjack as glbj  # game logic blowjob
+import objects as obj  # game logic blowjob
 
 
 class App(customtkinter.CTk):
@@ -15,7 +15,7 @@ class App(customtkinter.CTk):
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
         self.iconbitmap("Assets/Icon/jack_of_spades.ico")
 
-        self.deck = glbj.create_deck()
+        self.deck = obj.create_deck()
 
         # configure images
         for element in set(self.deck):
@@ -23,8 +23,8 @@ class App(customtkinter.CTk):
             exec(self.card_image_template)
 
         # create delaer and player objects
-        self.player = glbj.Player(self.deck)
-        self.dealer = glbj.Dealer(self.deck)
+        self.player = obj.Player(self.deck)
+        self.dealer = obj.Dealer(self.deck)
 
         # configure grid layout (9x11)
         self.grid_columnconfigure(0, weight=1)
@@ -59,19 +59,19 @@ class App(customtkinter.CTk):
 
         # configure buttons
         self.hit_button = customtkinter.CTkButton(
-            master=self, text="HIT", width=100, height=40, corner_radius=10, font=('', 20), command=self.place_new_hand)
+            master=self, text="HIT", width=100, height=40, corner_radius=20, font=('', 20), command=self.place_new_hand)
         self.hit_button.grid(row=9, column=1, sticky="nsew")
 
         self.stand_button = customtkinter.CTkButton(
-            master=self, text="STAND", width=100, height=40, corner_radius=10, font=('', 20), command=self.dealer_turn)
+            master=self, text="STAND", width=100, height=40, corner_radius=20, font=('', 20), command=self.dealer_turn)
         self.stand_button.grid(row=9, column=3, sticky="nsew")
 
         self.double_button = customtkinter.CTkButton(
-            master=self, text="DOUBLE", width=100, height=40, corner_radius=10, font=('', 20))
+            master=self, text="DOUBLE", width=100, height=40, corner_radius=20, font=('', 20))
         self.double_button.grid(row=9, column=5, sticky="nsew")
 
         self.split_button = customtkinter.CTkButton(
-            master=self, text="SPLIT", width=100, height=40, corner_radius=10, font=('', 20))
+            master=self, text="SPLIT", width=100, height=40, corner_radius=20, font=('', 20))
         self.split_button.grid(row=9, column=7, sticky="nsew")
 
         # configure labels
@@ -120,18 +120,20 @@ class App(customtkinter.CTk):
             self.playerscore_var.set(f"Player Score: {int(self.player.hand)}")
             for index, element in enumerate(self.player.hand.first_hand):
                 self.place_button_cards(index, 'player', element)
-        else:
+        if int(self.player.hand) > 20:
             self.hit_button.configure(state="disabled")
+            self.stand_button.configure(state="disabled")
+            self.dealer_turn()
 
     def dealer_turn(self) -> None:
         self.hit_button.configure(state="disabled")
         self.stand_button.configure(state="disabled")
         self.remove_cards(entity='dealer')
-        self.dealer.hand.draw_card(self.deck)
         self.dealerscore_var.set(f"Dealer Score: {int(self.dealer)}")
         for index, element in enumerate(self.dealer.hand.first_hand):
-            self.place_button_cards(index, 'dealer', element)
-        if int(self.dealer) < int(self.player.hand):
+                self.place_button_cards(index, 'dealer', element)
+        if int(self.dealer) < int(self.player.hand) < 22:
+            self.dealer.hand.draw_card(self.deck)
             self.dealer_turn()
 
 
