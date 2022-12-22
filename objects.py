@@ -1,7 +1,3 @@
-import itertools
-import random
-
-
 class Hand:
 
     first_hand: list[tuple[str]]
@@ -35,28 +31,21 @@ class Hand:
     def draw_card(self, deck: list[tuple[str]]) -> None:
         self.first_hand.append(deck.pop())
 
+
+class Player(Hand):
+
+    fiches: int
+
+    def __init__(self, deck: list[tuple[str]]):
+        super().__init__(deck)
+        self.fiches = 100
+
     def split_hand(self, deck: list[tuple[str]]) -> list[tuple[str]]:
         splitted = True
         second_hand = [self.first_hand.pop()]
         self.first_hand.append(deck.pop())
         second_hand.append(deck.pop())
         return splitted, second_hand
-
-
-class Player:
-
-    hand: Hand
-    fiches: int
-
-    def __init__(self, deck: list[tuple[str]]):
-        self.hand = Hand(deck)
-        self.fiches = 100
-
-    def __str__(self):
-        return f'Hand: {str(self.hand)}\nFiches: {self.fiches}'
-
-    def __int__(self):
-        return self.fiches
 
     def bet(self, amount: int) -> None:
         self.fiches -= amount
@@ -65,33 +54,7 @@ class Player:
         self.fiches += amount * 2
 
 
-class Dealer:
-
-    hand: Hand
+class Dealer(Hand):
 
     def __init__(self, deck: list[tuple[str]]):
-        self.hand = Hand(deck)
-
-    def __str__(self):
-        return f'Hand: {str(self.hand)}'
-
-    def __int__(self):
-        return int(self.hand)
-
-    def draw_card(self, deck: list[tuple[str]]) -> None:
-        self.hand.draw_card(deck)
-
-    def check_hand_sum(self) -> str:
-        return self.hand.check_hand_sum()
-
-
-SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
-RANKS = ["2", "3", "4", "5", "6", "7", "8",
-         "9", "10", "Jack", "Queen", "King", "Ace"]
-
-
-def create_deck() -> list[tuple[str]]:
-    deck = list(itertools.product(SUITS, RANKS))
-    deck += deck
-    random.shuffle(deck)
-    return deck
+        super().__init__(deck)
