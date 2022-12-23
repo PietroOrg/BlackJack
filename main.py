@@ -95,32 +95,33 @@ class App(customtkinter.CTk):
             row=7, column=3, columnspan=3, sticky="nsew")
 
         # generate first hand
-        for index, element in enumerate(self.player.first_hand):
-            self.place_button_cards(index, 'player', element)
-        self.place_dealer_first_hand()
+        self.place_button_cards('player')
+        self.place_dealer_hand()
 
     def create_deck(self) -> list[tuple[str]]:
         self.deck = list(itertools.product(App.SUITS, App.RANKS))
         self.deck += self.deck
         random.shuffle(self.deck)
 
-    def place_button_cards(self, index: int, entity: str, element: tuple[str]) -> None:
-        self.add_button_card_template = f'''self.{entity}_card{index} = customtkinter.CTkButton(master=self.{entity}_frame, image=self.{element[0].lower()}{element[1].lower()}, width=50, height=72.6, state="disabled", text="", fg_color="#154734", corner_radius=10)'''
-        exec(self.add_button_card_template)
-        self.place_button_card_template = f'''self.{entity}_card{index}.grid(row=0, column={index * 2 + 1}, sticky="nsew", pady=20)'''
-        exec(self.place_button_card_template)
+    def place_button_cards(self, entity: str) -> None:
+        entity_object = self.player if entity == 'player' else self.dealer
+        for index, element in enumerate(entity_object.hand):
+            self.add_button_card_template = f'''self.{entity}_card{index} = customtkinter.CTkButton(master=self.{entity}_frame, image=self.{element[0].lower()}{element[1].lower()}, width=50, height=72.6, state="disabled", text="", fg_color="#154734", corner_radius=10)'''
+            exec(self.add_button_card_template)
+            self.place_button_card_template = f'''self.{entity}_card{index}.grid(row=0, column={index * 2 + 1}, sticky="nsew", pady=20)'''
+            exec(self.place_button_card_template)
 
-    def place_dealer_first_hand(self) -> None:
-        self.place_button_cards(0, 'dealer', self.dealer[0])
+    def place_dealer_hand(self) -> None:
+        self.place_button_cards('dealer')
         self.card_back_image = customtkinter.CTkImage(
             dark_image=Image.open("Assets/PNG-cards/back.png"), size=(50, 72.6))
         self.dealer_card1 = customtkinter.CTkButton(
             master=self.dealer_frame, image=self.card_back_image, width=50, height=72.6, state="disabled", text="", fg_color="#154734", corner_radius=10)
         self.dealer_card1.grid(row=0, column=3, sticky="nsew", pady=20)
 
-    def remove_cards(self, entity) -> None:
-        hand = self.player if entity == 'player' else self.dealer
-        for index, element in enumerate(hand):
+    def remove_cards(self, entity: str) -> None:
+        entity_object = self.player if entity == 'player' else self.dealer
+        for index, element in enumerate(entity_object.hand):
             self.remove_card_template = f'''self.{entity}_card{index}.destroy()'''
             exec(self.remove_card_template)
 
@@ -129,23 +130,21 @@ class App(customtkinter.CTk):
             self.remove_cards(entity='player')
             self.player.draw_card(self.deck)
             self.playerscore_var.set(f"Player Score: {int(self.player)}")
-            for index, element in enumerate(self.player.first_hand):
-                self.place_button_cards(index, 'player', element)
+            self.place_button_cards('player')
         if int(self.player) > 20:
             self.hit_button.configure(state="disabled")
             self.stand_button.configure(state="disabled")
+            self.remove_cards(entity='dealer')
             self.dealer_turn()
 
     def dealer_turn(self) -> None:
         self.hit_button.configure(state="disabled")
         self.stand_button.configure(state="disabled")
-        self.remove_cards(entity='dealer')
-        self.dealerscore_var.set(f"Dealer Score: {int(self.dealer)}")
-        for index, element in enumerate(self.dealer.first_hand):
-            self.place_button_cards(index, 'dealer', element)
         if int(self.dealer) < int(self.player) < 22:
             self.dealer.draw_card(self.deck)
             self.dealer_turn()
+        self.dealerscore_var.set(f"Dealer Score: {int(self.dealer)}")
+        self.place_button_cards('dealer')
         self.check_winner()
 
     def check_winner(self) -> None:
