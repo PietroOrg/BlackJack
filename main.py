@@ -126,6 +126,7 @@ class App(customtkinter.CTk):
             exec(self.remove_card_template)
 
     def place_new_hand(self) -> None:
+        self.split_button.configure(state="disabled")
         if int(self.player) < 21:
             self.remove_cards(entity='player')
             self.player.draw_card(self.deck)
@@ -142,7 +143,7 @@ class App(customtkinter.CTk):
         self.stand_button.configure(state="disabled")
         if int(self.dealer) < int(self.player) < 22:
             self.dealer.draw_card(self.deck)
-            self.dealer_turn()
+            return self.dealer_turn()
         self.dealerscore_var.set(f"Dealer Score: {int(self.dealer)}")
         self.place_button_cards('dealer')
         self.check_winner()
