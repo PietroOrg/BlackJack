@@ -47,6 +47,9 @@ class Player(Hand):
 
     def win(self, amount: int) -> None:
         self.fiches += amount * 2
+    
+    def tie(self, amount: int) -> None:
+        self.fiches += amount
 
 
 class Dealer(Hand):

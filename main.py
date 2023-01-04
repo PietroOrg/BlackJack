@@ -1,3 +1,4 @@
+import contextlib
 import customtkinter
 from PIL import Image
 import objects as obj
@@ -48,12 +49,12 @@ class App(customtkinter.CTk):
 
         # configure frames
         self.dealer_frame = customtkinter.CTkFrame(
-            master=self, width=200, height=200, corner_radius=10, fg_color="#154734")
-        self.dealer_frame.grid(row=1, column=1, columnspan=7, sticky="nsew")
+            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
+        self.dealer_frame.grid(row=1, column=1, columnspan=7, sticky="ew")
 
         self.player_frame = customtkinter.CTkFrame(
-            master=self, width=200, height=200, corner_radius=10, fg_color="#154734")
-        self.player_frame.grid(row=5, column=1, columnspan=7, sticky="nsew")
+            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
+        self.player_frame.grid(row=5, column=1, columnspan=7, sticky="ew")
 
         # configure frames grid layout (31x3)
         for i in range(0, 15, 2):
@@ -65,43 +66,67 @@ class App(customtkinter.CTk):
 
         # configure buttons
         self.hit_button = customtkinter.CTkButton(
-            master=self, text="HIT", width=100, height=40, corner_radius=20, font=('', 20), command=self.place_new_hand)
+            master=self, text="HIT", width=100, height=40, corner_radius=20, font=('', 20), command=self.place_new_hand, state="disabled")
         self.hit_button.grid(row=9, column=1, sticky="nsew")
 
         self.stand_button = customtkinter.CTkButton(
-            master=self, text="STAND", width=100, height=40, corner_radius=20, font=('', 20), command=self.dealer_turn)
+            master=self, text="STAND", width=100, height=40, corner_radius=20, font=('', 20), command=self.dealer_turn, state="disabled")
         self.stand_button.grid(row=9, column=3, sticky="nsew")
 
-        self.double_button = customtkinter.CTkButton(
-            master=self, text="DOUBLE", width=100, height=40, corner_radius=20, font=('', 20))
-        self.double_button.grid(row=9, column=5, sticky="nsew")
+        self.restart_button = customtkinter.CTkButton(
+            master=self, text="PLAY\nAGAIN", width=100, height=40, corner_radius=20, font=('', 20), state="disabled", command=self.restart)
+        self.restart_button.grid(row=9, column=7, sticky="nsew")
 
-        self.split_button = customtkinter.CTkButton(
-            master=self, text="SPLIT", width=100, height=40, corner_radius=20, font=('', 20))
-        self.split_button.grid(row=9, column=7, sticky="nsew")
+        # configure entries
+        self.bet_entry = customtkinter.CTkEntry(
+            master=self, width=100, height=40, corner_radius=20, font=('', 20), justify="center")
+        self.bet_entry.grid(row=9, column=5, sticky="nsew")
+        self.bet_entry.bind("<Return>", self.submit_bet)
 
         # configure labels
-        self.dealerscore_var = customtkinter.StringVar(value="Dealer Score: X")
+        self.dealerscore_var = customtkinter.StringVar(value="Dealer Score: 0")
         self.dealerscore_label = customtkinter.CTkLabel(
             master=self, textvariable=self.dealerscore_var)
         self.dealerscore_label.grid(
             row=3, column=3, columnspan=3, sticky="nsew")
 
         self.playerscore_var = customtkinter.StringVar(
-            value=f"Player Score: {int(self.player)}")
+            value="Player Score: 0")
         self.playerscore_label = customtkinter.CTkLabel(
             master=self, textvariable=self.playerscore_var)
         self.playerscore_label.grid(
-            row=7, column=3, columnspan=3, sticky="nsew")
+            row=7, column=3, sticky="nsew")
 
-        # generate first hand
-        self.place_button_cards('player')
-        self.place_dealer_hand()
+        self.playerfiches_var = customtkinter.StringVar(value=f"Fiches: {self.player.fiches}")
+        self.bet_label = customtkinter.CTkLabel(
+            master=self, textvariable=self.playerfiches_var)
+        self.bet_label.grid(row=7, column=5, sticky="nsew")
+        
 
-    def create_deck(self) -> list[tuple[str]]:
+    def create_deck(self) -> None:
         self.deck = list(itertools.product(App.SUITS, App.RANKS))
         self.deck += self.deck
         random.shuffle(self.deck)
+
+    def submit_bet(self, *args) -> None:
+        with contextlib.suppress(Exception):
+            self.player_bet = int(self.bet_entry.get())
+            if self.player_bet <= self.player.fiches and self.player_bet >= 0:
+                self.initialize_game()
+            else:
+                messagebox.showerror("Error", "Invalid bet")
+
+    def initialize_game(self) -> None:
+        self.player.bet(self.player_bet)
+        self.hit_button.configure(state="normal")
+        self.stand_button.configure(state="normal")
+        self.bet_entry.configure(state="disabled")
+        self.place_button_cards('player')
+        self.place_dealer_hand()
+        self.place_button_cards(entity='player')
+        self.playerscore_var.set(f"Player Score: {int(self.player)}")
+        self.dealerscore_var.set("Dealer Score: X")
+        self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
 
     def place_button_cards(self, entity: str) -> None:
         entity_object = self.player if entity == 'player' else self.dealer
@@ -126,7 +151,6 @@ class App(customtkinter.CTk):
             exec(self.remove_card_template)
 
     def place_new_hand(self) -> None:
-        self.split_button.configure(state="disabled")
         if int(self.player) < 21:
             self.remove_cards(entity='player')
             self.player.draw_card(self.deck)
@@ -150,15 +174,28 @@ class App(customtkinter.CTk):
 
     def check_winner(self) -> None:
         if int(self.player) > 21:
-            messagebox.showinfo("Bust!", "You Lose!")
+            messagebox.showinfo("You Bust!", "You Lose!")
         elif int(self.dealer) > 21:
-            messagebox.showinfo("Bust!", "You Win!")
+            messagebox.showinfo("Dealer Busts!", "You Win!")
+            self.player.win(self.player_bet)
         elif int(self.player) == int(self.dealer):
-            messagebox.showinfo("Tie!", "You Tie!")
+            messagebox.showinfo("Tie!", "It's a Tie!")
+            self.player.tie(self.player_bet)
         elif int(self.player) > int(self.dealer):
-            messagebox.showinfo("Win!", "You Win!")
+            messagebox.showinfo("You scored more than the dealer!", "You Win!")
+            self.player.win(self.player_bet)
         elif int(self.player) < int(self.dealer):
-            messagebox.showinfo("Lose!", "You Lose!")
+            messagebox.showinfo("You scored less than the dealer!", "You Lose!")
+        self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
+        self.restart_button.configure(state="normal")
+    
+    def restart(self) -> None:
+        self.remove_cards(entity='dealer')
+        self.remove_cards(entity='player')
+        self.player = obj.Player(self.deck)
+        self.dealer = obj.Dealer(self.deck)
+        self.bet_entry.configure(state="normal")
+        self.restart_button.configure(state="disabled")
 
 
 if __name__ == "__main__":
