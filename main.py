@@ -5,7 +5,7 @@ import objects as obj
 import itertools
 import random
 from tkinter import messagebox
-
+import os, sys
 
 class App(customtkinter.CTk):
 
@@ -190,12 +190,10 @@ class App(customtkinter.CTk):
         self.restart_button.configure(state="normal")
     
     def restart(self) -> None:
-        self.remove_cards(entity='dealer')
-        self.remove_cards(entity='player')
-        self.player = obj.Player(self.deck)
-        self.dealer = obj.Dealer(self.deck)
-        self.bet_entry.configure(state="normal")
-        self.restart_button.configure(state="disabled")
+        #closes the program and restarts it
+        self.destroy()
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
 
 
 if __name__ == "__main__":
