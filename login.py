@@ -4,7 +4,7 @@ import pymongo
 from pymongo import MongoClient
 import os
 from tkinter import messagebox
-cluster = MongoClient("mongodb+srv://pietro:pietro123@cluster0.us5r2h2.mongodb.net/?retryWrites=true&w=majority")
+cluster = MongoClient("YOUR-URL")
 db = cluster["Blackjack"]
 collection = db["users"]
 
