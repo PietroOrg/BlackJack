@@ -6,6 +6,8 @@ import itertools
 import random
 from tkinter import messagebox
 import os, sys
+from login import LoginPage
+
 
 class App(customtkinter.CTk):
 
@@ -15,12 +17,13 @@ class App(customtkinter.CTk):
     RANKS = ["2", "3", "4", "5", "6", "7", "8",
              "9", "10", "Jack", "Queen", "King", "Ace"]
 
-    def __init__(self):
+    def __init__(self, login):
         super().__init__()
 
         self.title("BlackJack")
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
         self.iconbitmap("Assets/Icon/jack_of_spades.ico")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.create_deck()
 
@@ -30,7 +33,8 @@ class App(customtkinter.CTk):
             exec(self.card_image_template)
 
         # create delaer and player objects
-        self.player = obj.Player(self.deck)
+        self.fiches = int(login.fiches_active)
+        self.player = obj.Player(self.deck, self.fiches)
         self.dealer = obj.Dealer(self.deck)
 
         # configure grid layout (9x11)
@@ -48,21 +52,7 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure(10, weight=1)
 
         # configure frames
-        self.dealer_frame = customtkinter.CTkFrame(
-            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
-        self.dealer_frame.grid(row=1, column=1, columnspan=7, sticky="ew")
-
-        self.player_frame = customtkinter.CTkFrame(
-            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
-        self.player_frame.grid(row=5, column=1, columnspan=7, sticky="ew")
-
-        # configure frames grid layout (31x3)
-        for i in range(0, 15, 2):
-            self.player_frame.grid_columnconfigure(i, weight=1)
-            self.dealer_frame.grid_columnconfigure(i, weight=1)
-
-        self.player_frame.grid_rowconfigure(1, weight=1)
-        self.dealer_frame.grid_rowconfigure(1, weight=1)
+        self.configure_frames()
 
         # configure buttons
         self.hit_button = customtkinter.CTkButton(
@@ -91,7 +81,7 @@ class App(customtkinter.CTk):
             row=3, column=3, columnspan=3, sticky="nsew")
 
         self.playerscore_var = customtkinter.StringVar(
-            value="Player Score: 0")
+            value=f"{login.username_active} Score: 0")
         self.playerscore_label = customtkinter.CTkLabel(
             master=self, textvariable=self.playerscore_var)
         self.playerscore_label.grid(
@@ -107,6 +97,24 @@ class App(customtkinter.CTk):
         self.deck = list(itertools.product(App.SUITS, App.RANKS))
         self.deck += self.deck
         random.shuffle(self.deck)
+
+    def configure_frames(self) -> None:
+        # configure frames
+        self.dealer_frame = customtkinter.CTkFrame(
+            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
+        self.dealer_frame.grid(row=1, column=1, columnspan=7, sticky="ew")
+
+        self.player_frame = customtkinter.CTkFrame(
+            master=self, width=200, height=120, corner_radius=10, fg_color="#154734")
+        self.player_frame.grid(row=5, column=1, columnspan=7, sticky="ew")
+
+        # configure frames grid layout (31x3)
+        for i in range(0, 15, 2):
+            self.player_frame.grid_columnconfigure(i, weight=1)
+            self.dealer_frame.grid_columnconfigure(i, weight=1)
+
+        self.player_frame.grid_rowconfigure(1, weight=1)
+        self.dealer_frame.grid_rowconfigure(1, weight=1)
 
     def submit_bet(self, *args) -> None:
         with contextlib.suppress(Exception):
@@ -124,7 +132,7 @@ class App(customtkinter.CTk):
         self.place_button_cards('player')
         self.place_dealer_hand()
         self.place_button_cards(entity='player')
-        self.playerscore_var.set(f"Player Score: {int(self.player)}")
+        self.playerscore_var.set(f"{login.username_active} Score: {int(self.player)}")
         self.dealerscore_var.set("Dealer Score: X")
         self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
 
@@ -154,7 +162,7 @@ class App(customtkinter.CTk):
         if int(self.player) < 21:
             self.remove_cards(entity='player')
             self.player.draw_card(self.deck)
-            self.playerscore_var.set(f"Player Score: {int(self.player)}")
+            self.playerscore_var.set(f"{login.username_active} Score: {int(self.player)}")
             self.place_button_cards('player')
         if int(self.player) > 20:
             self.hit_button.configure(state="disabled")
@@ -190,12 +198,26 @@ class App(customtkinter.CTk):
         self.restart_button.configure(state="normal")
     
     def restart(self) -> None:
-        #closes the program and restarts it
-        self.destroy()
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        self.restart_button.configure(state="disabled")
+        self.bet_entry.configure(state="normal")
+        self.dealer_frame.destroy()
+        self.player_frame.destroy()
+        self.configure_frames()
+        self.playerscore_var.set(f"{login.username_active} Score: 0")
+        self.dealerscore_var.set("Dealer Score: 0")
+        self.player = obj.Player(self.deck, self.player.fiches)
+        self.dealer = obj.Dealer(self.deck)
+        self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
 
+    def on_closing(self) -> None:
+        login.update_fiches(self.player.fiches)
+        self.destroy()
+        
 
 
 if __name__ == "__main__":
-    app = App()
+    login = LoginPage()
+    login.mainloop()
+
+    app = App(login)
     app.mainloop()

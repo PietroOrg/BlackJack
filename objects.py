@@ -32,9 +32,9 @@ class Player(Hand):
     second_hand: list[tuple[str]]
     fiches: int
 
-    def __init__(self, deck: list[tuple[str]]):
+    def __init__(self, deck: list[tuple[str]], fiches: int):
         super().__init__(deck)
-        self.fiches = 100
+        self.fiches = fiches
 
     def split_hand(self, deck: list[tuple[str]]) -> list[tuple[str]]:
         second_hand = [self.hand.pop()]
