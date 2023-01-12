@@ -26,5 +26,5 @@ Install my-project with npm
 
 ## Screenshots
 
-![App Screenshot](https://i.imgur.com/Kf1Kikt.png)
+![App Screenshot](https://i.imgur.com/JkB6FA0.png)
 
