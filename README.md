@@ -21,7 +21,7 @@ Install my-project with npm
 
 - [@MarveeDev](https://www.github.com/MarveeDev)
 - [@VasseDev](https://www.github.com/VasseDev)
-
+- [@FedeBugni](https://github.com/FedeBugni)
 
 
 ## Screenshots
