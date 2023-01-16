@@ -92,7 +92,7 @@ class App(customtkinter.CTk):
             master=self, textvariable=self.playerfiches_var)
         self.bet_label.grid(row=7, column=5, sticky="nsew")
         
-
+    # create deck function: creates a deck of cards
     def create_deck(self) -> None:
         self.deck = list(itertools.product(App.SUITS, App.RANKS))
         self.deck += self.deck
@@ -116,6 +116,7 @@ class App(customtkinter.CTk):
         self.player_frame.grid_rowconfigure(1, weight=1)
         self.dealer_frame.grid_rowconfigure(1, weight=1)
 
+    # submit bet function: attached to "enter" command, confirms the bet
     def submit_bet(self, *args) -> None:
         with contextlib.suppress(Exception):
             self.player_bet = int(self.bet_entry.get())
@@ -124,6 +125,7 @@ class App(customtkinter.CTk):
             else:
                 messagebox.showerror("Error", "Invalid bet")
 
+    # initialize game function: initializes player and dealer decks, places bet
     def initialize_game(self) -> None:
         self.player.bet(self.player_bet)
         self.hit_button.configure(state="normal")
@@ -136,6 +138,7 @@ class App(customtkinter.CTk):
         self.dealerscore_var.set("Dealer Score: X")
         self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
 
+    # place button cards function: places cards on the table
     def place_button_cards(self, entity: str) -> None:
         entity_object = self.player if entity == 'player' else self.dealer
         for index, element in enumerate(entity_object.hand):
@@ -143,7 +146,8 @@ class App(customtkinter.CTk):
             exec(self.add_button_card_template)
             self.place_button_card_template = f'''self.{entity}_card{index}.grid(row=0, column={index * 2 + 1}, sticky="nsew", pady=20)'''
             exec(self.place_button_card_template)
-
+            
+    # place dealer hand function: recalls the last function to place dealer hand
     def place_dealer_hand(self) -> None:
         self.place_button_cards('dealer')
         self.card_back_image = customtkinter.CTkImage(
@@ -152,12 +156,14 @@ class App(customtkinter.CTk):
             master=self.dealer_frame, image=self.card_back_image, width=50, height=72.6, state="disabled", text="", fg_color="#154734", corner_radius=10)
         self.dealer_card1.grid(row=0, column=3, sticky="nsew", pady=20)
 
+    # remove cards function: removes every card from a specific entity
     def remove_cards(self, entity: str) -> None:
         entity_object = self.player if entity == 'player' else self.dealer
         for index, element in enumerate(entity_object.hand):
             self.remove_card_template = f'''self.{entity}_card{index}.destroy()'''
             exec(self.remove_card_template)
 
+    # place new hand function: removes every card and replaces with new ones
     def place_new_hand(self) -> None:
         if int(self.player) < 21:
             self.remove_cards(entity='player')
@@ -170,6 +176,7 @@ class App(customtkinter.CTk):
             self.remove_cards(entity='dealer')
             self.dealer_turn()
 
+    # dealer turn function: draws dealer cards
     def dealer_turn(self) -> None:
         self.hit_button.configure(state="disabled")
         self.stand_button.configure(state="disabled")
@@ -180,6 +187,7 @@ class App(customtkinter.CTk):
         self.place_button_cards('dealer')
         self.check_winner()
 
+    # check winner function
     def check_winner(self) -> None:
         if int(self.player) > 21:
             messagebox.showinfo("You Bust!", "You Lose!")
@@ -197,6 +205,7 @@ class App(customtkinter.CTk):
         self.playerfiches_var.set(f"Fiches: {self.player.fiches}")
         self.restart_button.configure(state="normal")
     
+    # game restart function
     def restart(self) -> None:
         self.restart_button.configure(state="disabled")
         self.bet_entry.configure(state="normal")
