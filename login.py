@@ -39,7 +39,8 @@ class LoginPage(customtkinter.CTk):
         self.password = customtkinter.CTkEntry(master=self, placeholder_text ="Password", show = '*')
         self.password.grid(row=5, column=1, sticky="ew")
         self.password.bind("<Return>", self.login)
-
+        
+    # Login function: detects username and password from the entries and performs a check on the database
     def login(self, *args):
         self.username_active = self.username.get()
         password = self.password.get()
@@ -55,6 +56,7 @@ class LoginPage(customtkinter.CTk):
             self.destroy()
         self.fiches_active = collection.find_one({"username": self.username_active})["fiches"]
 
+    # Update fiches function: updates the number of fiches on the database
     def update_fiches(self, fiches):
         collection.update_one({"username": self.username_active}, {"$set": {"fiches": fiches}})
 
