@@ -8,7 +8,7 @@ from tkinter import messagebox
 import os, sys
 from login import LoginPage
 
-
+customtkinter.set_appearance_mode('Dark')
 class App(customtkinter.CTk):
 
     WIDTH = 780
@@ -124,6 +124,7 @@ class App(customtkinter.CTk):
                 self.initialize_game()
             else:
                 messagebox.showerror("Error", "Invalid bet")
+            self.focus()
 
     # initialize game function: initializes player and dealer decks, places bet
     def initialize_game(self) -> None:
